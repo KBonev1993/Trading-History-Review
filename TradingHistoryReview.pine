@@ -1,0 +1,40 @@
+//@version=4
+study("Trading History Review", overlay=true)
+
+
+
+// Manually enter trade information
+tickerName = input(title="Ticker Name", type=input.string, defval="AAPL")
+longShort = input(title="Long / Short", type=input.string, defval="Long")
+numShares = input(title="# Shares", type=input.float, defval=100)
+entryPrice = input(title="Entry Price", type=input.float, defval=150)
+exitPrice = input(title="Exit Price", type=input.float, defval=170)
+entryDate = input(title="Entry Date", type=input.string, defval="2022-01-01")
+exitDate = input(title="Exit Date", type=input.string, defval="2022-01-31")
+entryTime = input(title="Entry Time", type=input.time, defval=timestamp("2022-01-01 09:30:00"))
+exitTime = input(title="Exit Time", type=input.time, defval=timestamp("2022-01-31 16:00:00"))
+
+
+
+// Calculate $ amount based on long/short and trade outcome
+isLong = longShort == "Long"
+outcome = (isLong ? exitPrice - entryPrice : entryPrice - exitPrice) * numShares
+isProfit = outcome > 0
+outcomeStr = isProfit ? "+" : "-"
+outcomeStr += tostring(abs(outcome), "#.##")
+outcomeStr += "$"
+
+
+
+// Plot entry and exit points
+plotshape(series=longShort == "Long" ? high : low, style=shape.circle, location=longShort == "Long" ? location.belowbar : location.abovebar, color=isProfit ? color.green : color.red, size=size.tiny)
+plotshape(series=longShort == "Long" ? low : high, style=shape.circle, location=longShort == "Long" ? location.abovebar : location.belowbar, color=isProfit ? color.red : color.green, size=size.tiny)
+plotchar(series=longShort == "Long" ? high : low, location=longShort == "Long" ? location.belowbar : location.abovebar, text=outcomeStr, color=color.white, size=size.tiny)
+
+
+
+// Set chart properties
+title(tickerName)
+startdate = time(entryDate + " " + tostring(hour(entryTime)) + ":" + tostring(minute(entryTime)) + ":00")
+enddate = time(exitDate + " " + tostring(hour(exitTime)) + ":" + tostring(minute(exitTime)) + ":00")
+xlim(startdate, enddate)
